@@ -15,6 +15,8 @@ class Baseline3DConvNet(nn.Module):
         self.pool1 = nn.MaxPool3d(kernel_size=2, stride=2)
         #self.pool2 = nn.MaxPool3d(kernel_size=2, stride=1)
 
+        self.dropout = nn.Dropout(0.2)
+        
         # Define the fully connected layers
         self.fc1 = nn.Linear(64 * 1 * 112 * 112, 128)  # Adjust the input size based on your image dimensions
         self.fc2 = nn.Linear(128, num_classes)
@@ -34,6 +36,7 @@ class Baseline3DConvNet(nn.Module):
         x = x.view(-1, 64 * 1 * 112 * 112)
 
         # Apply fully connected layers
+        x = self.dropout(x)                                 # added in aug_0.5_v2 version
         x = torch.relu(self.fc1(x))
         logits = self.fc2(x)
         loss = self.loss_fn(logits= logits, y = y)

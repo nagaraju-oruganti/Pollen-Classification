@@ -154,20 +154,26 @@ def dataloaders(cfg):
     # Augmentation
     aug_dataset = []
     for d in train_dataset:
-        if random.random() >= cfg.aug_threshold:        # aug_threshold of > 1 means no augmentation
+        if random.random() >= 1 - cfg.aug_threshold:        # aug_threshold of > 1 means no augmentation
             aug_dataset.append((d[0], d[1], True))
     train_dataset += aug_dataset
     
-    train = PollenDataset(cfg, train_dataset)
+    train = PollenDataset(cfg, prep.data['train'])
+    aug_train = PollenDataset(cfg, train_dataset)
     valid = PollenDataset(cfg, prep.data['test'])
 
     train_loader = DataLoader(train,
                               batch_size=cfg.train_batch_size,
                               shuffle=True,
                               drop_last=False)
+    
+    aug_train_loader = DataLoader(aug_train,
+                                  batch_size=cfg.train_batch_size,
+                                  shuffle=True,
+                                  drop_last=False)
 
     valid_loader = DataLoader(valid,
                               batch_size=cfg.valid_batch_size,
                               shuffle=False)
 
-    return train_loader, valid_loader
+    return train_loader, aug_train_loader, valid_loader

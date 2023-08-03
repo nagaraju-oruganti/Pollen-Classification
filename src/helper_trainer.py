@@ -49,7 +49,7 @@ def evaluate(model, dataloader, device):
     return f1, acc, loss
 
 #### Trainer
-def trainer(config, model, train_loader, valid_loader, optimizer, scheduler):
+def trainer(config, model, train_loader, aug_train_loader, valid_loader, optimizer, scheduler):
     
     def update_que():
         que.set_postfix({
@@ -123,7 +123,7 @@ def trainer(config, model, train_loader, valid_loader, optimizer, scheduler):
         model.train()
         batch_loss_list = []
 
-        que = tqdm(enumerate(train_loader), total = len(train_loader), ncols=120)
+        que = tqdm(enumerate(aug_train_loader), total = len(aug_train_loader), ncols=160)
         for i, (images, targets) in que:
             
             ###### TRAINING SECQUENCE            
@@ -171,10 +171,10 @@ def train(config):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode = 'max', factor=0.5, patience=3)
     
     # dataloaders
-    train_loader, valid_loader = dataloaders(config)
+    train_loader, aug_train_loader, valid_loader = dataloaders(config)
     
     # Trainer
-    results = trainer(config, model, train_loader, valid_loader, optimizer, scheduler)
+    results = trainer(config, model, train_loader, aug_train_loader, valid_loader, optimizer, scheduler)
     
     ### SAVE RESULTS
     with open(os.path.join(config.dest_path, 'results.pkl'), 'wb') as f:
