@@ -12,3 +12,4 @@ tsconfig.lsif.json
 # ignore
 inputs
 notebooks/playground.ipynb
+notebooks/pollen_trainer_2.ipynb

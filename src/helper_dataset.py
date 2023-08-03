@@ -38,7 +38,6 @@ def split_dataset(data_dir, seed, save = True):
 
     if save:
         df.to_csv(f'{data_dir}/fold_map.csv')
-    
     return df
 
 # Preprocess dataset
@@ -92,11 +91,11 @@ class Preprocess:
         self.data = data
 
 
-
 class PollenDataset(Dataset):
     def __init__(self, config, data):
         self.data = data
         self.data_dir = config.data_dir
+        self.centered_zero = config.centered_zero
         self.height = config.height
         self.width = config.width
         self.max_rotation_angle = config.max_rotation_angle
@@ -105,10 +104,12 @@ class PollenDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, idx):
+        
         image = self.read_image(self.data[idx][0])
         label = self.data[idx][1]
-            
         img_tensor = self.apply_transformation(img = image, augment = self.data[idx][2])
+        if self.centered_zero:
+            img_tensor = (img_tensor - 0.5) * 2     # [0, 1] --> -0.5 --> [-0.5, 0.5] --> apply * 2 --> [-1, 1]
         label_tensor = torch.tensor(label, dtype= torch.long)
         
         return img_tensor, label_tensor
@@ -138,7 +139,6 @@ class PollenDataset(Dataset):
             ## Augmentation
             transforms.RandomHorizontalFlip(p = 0.8 if augment else 0),             # Randomly apply horizontal flip with probability 0.8
             transforms.RandomRotation(self.max_rotation_angle if augment else 0), 
-            
         ])
         return transform
         

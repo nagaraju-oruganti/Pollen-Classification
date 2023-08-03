@@ -5,10 +5,10 @@ class Baseline3DConvNet(nn.Module):
     def __init__(self, config, num_classes):
         super(Baseline3DConvNet, self).__init__()
         
-        in_channels = 20
+        in_channels = config.in_channels
 
         # Define the 3D convolution layers
-        self.conv1 = nn.Conv3d(in_channels=20, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv3d(in_channels=in_channels, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1)
 
         # Define the pooling layer

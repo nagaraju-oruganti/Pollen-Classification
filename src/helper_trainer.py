@@ -28,7 +28,7 @@ def evaluate(model, dataloader, device):
     y_trues = []
     y_preds = []
     batch_loss_list = []
-    model.eval()
+    model.eval()                            # model in evaluation mode
     with torch.no_grad():
         for inputs, targets in dataloader:
             logits, loss = model(inputs.to(device), targets.to(device))
@@ -46,6 +46,7 @@ def evaluate(model, dataloader, device):
     acc = accuracy_score(y_trues, y_preds)
     loss = np.mean(batch_loss_list)
     f1 = f1_score(y_trues, y_preds, average = 'weighted')
+    
     return f1, acc, loss
 
 #### Trainer
@@ -105,6 +106,10 @@ def trainer(config, model, train_loader, aug_train_loader, valid_loader, optimiz
         # show results
         print_result()
         
+        # Save results
+        with open(os.path.join(config.dest_path, 'results.pkl'), 'wb') as f:
+            pickle.dump(results, f)
+        
         return ref_score, counter, done 
     
     ### MIXED PRECISION
@@ -120,7 +125,7 @@ def trainer(config, model, train_loader, aug_train_loader, valid_loader, optimiz
     ref_score, counter = 1e-3, 0
     train_loss, valid_loss, train_f1, valid_f1 = 0, 0, 0, 0
     for epoch in range(NUM_EPOCHS):
-        model.train()
+        model.train()                       # put model in train mode
         batch_loss_list = []
 
         que = tqdm(enumerate(aug_train_loader), total = len(aug_train_loader), ncols=160)
@@ -132,12 +137,12 @@ def trainer(config, model, train_loader, aug_train_loader, valid_loader, optimiz
                 loss = loss / iters_to_accumlate
             
             # - Accmulates scaled gradients    
-            scaler.scale(loss).backward()           # scale loss
+            scaler.scale(loss).backward()                                        # backward pass (scaled loss)
             
             if (i + 1) % iters_to_accumlate == 0:
-                scaler.step(optimizer)                  # step
+                scaler.step(optimizer)                                           # step
                 scaler.update()
-                optimizer.zero_grad()
+                optimizer.zero_grad()                                            # zero grad
             #######
             
             batch_loss_list.append(loss.item())
@@ -174,27 +179,10 @@ def train(config):
     train_loader, aug_train_loader, valid_loader = dataloaders(config)
     
     # Trainer
-    results = trainer(config, model, train_loader, aug_train_loader, valid_loader, optimizer, scheduler)
+    results = trainer(config, model, 
+                      train_loader, aug_train_loader, valid_loader, 
+                      optimizer, scheduler)
     
     ### SAVE RESULTS
     with open(os.path.join(config.dest_path, 'results.pkl'), 'wb') as f:
         pickle.dump(results, f)
-
-
-if __name__ == '__main__':
-    from helper_config import Config
-    
-    config = Config()
-    config.data_dir = 'inputs/data'      
-    config.models_dir = 'models/baseline' 
-    config.model_name = 'baseline'
-    config.train_batch_size = 2
-    config.iters_to_accumlate = 1
-    config.sample_run = False
-    config.learning_rate = 1e-4
-    config.num_epochs = 100
-    config.save_epoch_wait = 1    
-    config.early_stop_count = 10
-    config.save_checkpoint = True
-    
-    results = train(config)

@@ -28,6 +28,7 @@ class Config:
     models_dir = '../models'
     
     # Image preprocess
+    centered_zero = False       # True: rescales to -1, 1 
     height = 224
     width = 224
     
@@ -44,7 +45,6 @@ class Config:
     
     ## Model params
     in_channels = 20        # frames in the image
-    
     
     ## Run params
     sample_run = False
